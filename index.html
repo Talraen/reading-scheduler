@@ -6,45 +6,47 @@
 </head>
 <body>
 <h1>Wheel of Time Reading Schedule</h1>
-<div class="data-container">
-	<h2>Duration</h2>
-	<ul>
-		<li><input type="radio" name="duration-type" value="pages-per-day" checked="checked" /> Read <input type="text" name="pages-per-day" value="50" size="5" /> pages per day</li>
-		<li><input type="radio" name="duration-type" value="days" /> Finish books in <input type="text" name="days" value="199" size="5" /> days</li>
-		<li><input type="radio" name="duration-type" value="date" /> Finish books on <input type="text" name="date-mm" value="01" size="2" maxlength="2" />/<input type="text" name="date-dd" value="08" size="2" maxlength="2" />/<input type="text" name="date-yyyy" value="2013" size="4" maxlength="4" /></li>
-	</ul>
-	Allowed Variance: <input type="text" name="variance" value="50" size="2" />%
-</div>
-<div class="data-container">
-	<h2>Read On</h2>
-	<ul>
-		<li><input type="checkbox" name="day-0" checked="checked" /> Sunday</li>
-		<li><input type="checkbox" name="day-1" checked="checked" /> Monday</li>
-		<li><input type="checkbox" name="day-2" checked="checked" /> Tuesday</li>
-		<li><input type="checkbox" name="day-3" checked="checked" /> Wednesday</li>
-		<li><input type="checkbox" name="day-4" checked="checked" /> Thursday</li>
-		<li><input type="checkbox" name="day-5" checked="checked" /> Friday</li>
-		<li><input type="checkbox" name="day-6" checked="checked" /> Saturday</li>
-	</ul>
-</div>
-<div class="data-container">
-	<h2>Books</h2>
-	<ul id="book-list">
-	</ul>
-</div>
-<div class="data-container">
-	<h2>Read New Spring</h2>
-	<ul id="new-spring-list">
-		<li><input type="radio" name="new-spring-position" value="0" checked="checked" /> First (chronological)</li>
-	</ul>
-</div>
-<div class="data-container">
-	<h2>Options</h2>
-	<div><input type="checkbox" name="show-chapter-titles" /> Show chapter titles</div>
-</div>
-<div class="data-container">
-	<button id="create-schedule">Create Schedule</button>
-</div>
+<form id="options">
+	<div class="data-container">
+		<h2>Duration</h2>
+		<ul>
+			<li><input type="radio" name="duration-type" value="pages-per-day" checked="checked" /> Read <input type="text" name="pages-per-day" value="50" size="5" /> pages per day</li>
+			<li><input type="radio" name="duration-type" value="days" /> Finish books in <input type="text" name="days" value="199" size="5" /> days</li>
+			<li><input type="radio" name="duration-type" value="date" /> Finish books on <input type="text" name="date-mm" value="01" size="2" maxlength="2" />/<input type="text" name="date-dd" value="08" size="2" maxlength="2" />/<input type="text" name="date-yyyy" value="2013" size="4" maxlength="4" /></li>
+		</ul>
+		Allowed Variance: <input type="text" name="variance" value="50" size="2" />%
+	</div>
+	<div class="data-container">
+		<h2>Read On</h2>
+		<ul>
+			<li><input type="checkbox" name="day-0" checked="checked" /> Sunday</li>
+			<li><input type="checkbox" name="day-1" checked="checked" /> Monday</li>
+			<li><input type="checkbox" name="day-2" checked="checked" /> Tuesday</li>
+			<li><input type="checkbox" name="day-3" checked="checked" /> Wednesday</li>
+			<li><input type="checkbox" name="day-4" checked="checked" /> Thursday</li>
+			<li><input type="checkbox" name="day-5" checked="checked" /> Friday</li>
+			<li><input type="checkbox" name="day-6" checked="checked" /> Saturday</li>
+		</ul>
+	</div>
+	<div class="data-container">
+		<h2>Books</h2>
+		<ul id="book-list">
+		</ul>
+	</div>
+	<div class="data-container">
+		<h2>Read New Spring</h2>
+		<ul id="new-spring-list">
+			<li><input type="radio" name="new-spring-position" value="0" checked="checked" /> First (chronological)</li>
+		</ul>
+	</div>
+	<div class="data-container">
+		<h2>Options</h2>
+		<div><input type="checkbox" name="show-chapter-titles" /> Show chapter titles</div>
+	</div>
+	<div class="data-container">
+		<button id="create-schedule">Create Schedule</button>
+	</div>
+</form>
 <div id="schedule">
 	<table>
 		<thead>
@@ -59,6 +61,8 @@
 	</table>
 </div>
 <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
+<script type="text/javascript" src="jquery.cookie.js"></script>
+<script type="text/javascript" src="jquery.readerForm.js"></script>
 <script type="text/javascript" src="script.js"></script>
 </body>
 </html>
