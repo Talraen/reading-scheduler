@@ -1,8 +1,10 @@
 (function() {
+    // TODO: Make output printable or saveable as PDF
     const WORDS_PER_PAGE = 400;
     let books = [];
     let specialOrderBooks = {};
     let optionsShown = {'show-chapter-titles': true};
+    // TODO: Add option for "show in chronological order" if the list isn't already
 
     const $series = document.getElementById('series');
     $series.addEventListener('change', function(event) {
@@ -46,6 +48,7 @@
             const id = 'book-' + i;
             const $li = document.createElement('li');
 
+            // TODO: Calculate pages from chapters, remove it from data (also remove density)
             books[i].wordsPerPage = books[i].words / books[i].pages;
             
             const $checkbox = document.createElement('input');
@@ -94,10 +97,10 @@
         // Calculate days based on default pages per day value
         let days = Math.round(pages / document.getElementById('pages-per-day').value);
         setTargetDays(days);
-        // TODO: Update the duration values whenever the selected one is changed
+        // TODO: Update the duration values whenever the selected one is changed (or whenever the days of the week are changed)
     }
 
-    // TODO: Have this work even if multiple series are included
+    // TODO: Have this work even if multiple series are included (add a "series offset" to books when loading multiple series at once)
     function addSpecialOrder(bookNumber) {
         const book = books[bookNumber];
 
