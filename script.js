@@ -28,6 +28,21 @@
     });
     $series.dispatchEvent(new Event('change'));
 
+    // Add listeners to days and duration types to update duration data
+    for (let day = 0; day < 7; day++) {
+        document.getElementById('day-' + day).addEventListener('click', updateDurations);
+    }
+    const $durationTypes = document.querySelectorAll('input[name=duration-type]');
+    for (let i = 0; i < $durationTypes.length; i++) {
+        $durationTypes[i].addEventListener('click', updateDurations);
+    }
+    const $durationInputs = document.querySelectorAll('#duration-container input[type=number]');
+    console.log($durationInputs);
+    for (let i = 0; i < $durationInputs.length; i++) {
+        $durationInputs[i].addEventListener('blur', updateDurations);
+        $durationInputs[i].addEventListener('change', updateDurations);
+    }
+
     function loadBooks(bookData) {
         books = bookData;
         const $bookList = document.getElementById('book-list');
@@ -59,6 +74,7 @@
             $checkbox.type = 'checkbox';
             $checkbox.checked = true;
             $checkbox.id = id;
+            $checkbox.addEventListener('click', updateDurations);
             $li.appendChild($checkbox);
 
             const $label = document.createElement('label');
@@ -98,10 +114,7 @@
         }
         document.getElementById('options-container').style.display = showOptions ? 'block' : 'none';
     
-        // Calculate days based on default pages per day value
-        let days = Math.round(pages / document.getElementById('pages-per-day').value);
-        setTargetDays(days);
-        // TODO: Update the duration values whenever the selected one is changed (or whenever the days of the week are changed)
+        updateDurations();
     }
 
     // TODO: Have this work even if multiple series are included (add a "series offset" to books when loading multiple series at once)
@@ -165,23 +178,92 @@
         }
     }
 
-    function setTargetDays(days) {
-        const $days = document.getElementById('days');
-        $days.value = days;
+    function updateDurations() {
+        // First, calculate how many pages are currently in play
+        let words = 0;
+        for (let i = 0; i < books.length; i++) {
+            if (document.getElementById('book-' + i).checked) {
+                words += books[i].words;
+            }
+        }
+        const pages = Math.round(words / WORDS_PER_PAGE);
 
-        // Set target date value
-        const today = new Date();
-        setTargetDate(new Date(today.getTime() + days * 24 * 60 * 60 * 1000));
+        switch(document.querySelector('input[name=duration-type]:checked').value) {
+			case 'pages-per-day':
+                document.getElementById('pages-per-day').disabled = false;
+
+                const calculatedDays = Math.round(pages / document.getElementById('pages-per-day').value);
+                document.getElementById('days').value = calculatedDays;
+                document.getElementById('days').disabled = true;
+
+                setTargetDate(calculatedDays);
+                document.getElementById('date-month').disabled = true;
+                document.getElementById('date-day').disabled = true;
+                document.getElementById('date-year').disabled = true;
+                break;
+				
+			case 'days':
+                const inputDays = document.getElementById('days').value;
+                document.getElementById('days').disabled = false;
+
+                document.getElementById('pages-per-day').disabled = true;
+                document.getElementById('pages-per-day').value = Math.round(pages / inputDays)
+
+                setTargetDate(inputDays);
+                document.getElementById('date-month').disabled = true;
+                document.getElementById('date-day').disabled = true;
+                document.getElementById('date-year').disabled = true;
+                break;
+				
+			case 'date':
+                document.getElementById('date-month').disabled = false;
+                document.getElementById('date-day').disabled = false;
+                document.getElementById('date-year').disabled = false;
+
+                let currentDate = new Date();
+                let targetDate = new Date(document.getElementById('date-year').value, document.getElementById('date-month').value - 1, document.getElementById('date-day').value, 12);
+                let days = 0;
+
+                const [weekdays, ] = getWeekdays();
+
+                while (currentDate < targetDate) {
+                    while (weekdays[currentDate.getDay()] <= 0) {
+                        currentDate.setDate(currentDate.getDate() + 1);
+                    }
+                    currentDate.setDate(currentDate.getDate() + 1);
+                    days++;
+                }
+
+                document.getElementById('days').value = days;
+                document.getElementById('days').disabled = true;
+
+                document.getElementById('pages-per-day').disabled = true;
+                document.getElementById('pages-per-day').value = Math.round(pages / days)
+                break;
+		}
     }
 
-    function setTargetDate(date) {
+    function setTargetDate(days) {
+        let currentDate = new Date();
+        let daysLeft = days;
+
+        const [weekdays, ] = getWeekdays();
+
+        while (daysLeft > 0) {
+            while (weekdays[currentDate.getDay()] <= 0) {
+                currentDate.setDate(currentDate.getDate() + 1);
+            }
+            currentDate.setDate(currentDate.getDate() + 1);
+            daysLeft--;
+        }
+
         const $day = document.getElementById('date-day');
         const $month = document.getElementById('date-month');
         const $year = document.getElementById('date-year');
 
-        $day.value = date.getDate();
-        $month.value = date.getMonth() + 1;
-        $year.value = date.getFullYear();
+        $day.value = currentDate.getDate();
+        $month.value = currentDate.getMonth() + 1;
+        $year.value = currentDate.getFullYear();
     }
 
     let readingList = [];
