@@ -1,48 +1,70 @@
 (function() {
-	let seriesName = 'wheel-of-time';
     let books = [];
     let specialOrderBooks = {};
 
-    fetch('./' + seriesName + '.json')
+    const $series = document.getElementById('series');
+    $series.addEventListener('change', function(event) {
+        event.preventDefault();
+        fetch('./' + this.value + '.json')
         .then(response => response.json())
         .then(bookData => {
-            books = bookData;
-            const $bookList = document.getElementById('book-list');
-
-            let pages = 0;
-            for (let i = 0; i < books.length; i++) {
-                const id = 'book-' + i;
-                const $li = document.createElement('li');
-                
-                const $checkbox = document.createElement('input');
-                $checkbox.type = 'checkbox';
-                $checkbox.checked = true;
-                $checkbox.id = id;
-                $li.appendChild($checkbox);
-
-                const $label = document.createElement('label');
-                $label.htmlFor = id;
-                $label.appendChild(document.createTextNode(books[i].title));
-                $li.appendChild($label);
-
-                $bookList.appendChild($li);
-                pages += books[i].pages;
-
-                if (typeof books[i].ordering !== 'undefined') {
-                    addSpecialOrder(i);
-                }
-            }
-        
-            // Calculate days based on default pages per day value
-            let days = Math.round(pages / document.getElementById('pages-per-day').value);
-            setTargetDays(days);
+            loadBooks(bookData);
         });
+    });
+    $series.dispatchEvent(new Event('change'));
+
+    function loadBooks(bookData) {
+        books = bookData;
+        const $bookList = document.getElementById('book-list');
+        emptyElement($bookList);
+
+        document.getElementById('schedule').style.visibility = 'hidden';
+
+        for (let i in specialOrderBooks) {
+            if (specialOrderBooks.hasOwnProperty(i)) {
+                const $bookListContainer = document.getElementById('special-order-' + i + '-container');
+                $bookListContainer.parentNode.removeChild($bookListContainer);
+            }
+        }
+        specialOrderBooks = {};
+
+        let pages = 0;
+        for (let i = 0; i < books.length; i++) {
+            const id = 'book-' + i;
+            const $li = document.createElement('li');
+            
+            const $checkbox = document.createElement('input');
+            $checkbox.type = 'checkbox';
+            $checkbox.checked = true;
+            $checkbox.id = id;
+            $li.appendChild($checkbox);
+
+            const $label = document.createElement('label');
+            $label.htmlFor = id;
+            $label.appendChild(document.createTextNode(books[i].title));
+            $li.appendChild($label);
+
+            $bookList.appendChild($li);
+            pages += books[i].pages;
+
+            if (typeof books[i].ordering !== 'undefined') {
+                addSpecialOrder(i);
+            }
+        }
+    
+        // Calculate days based on default pages per day value
+        let days = Math.round(pages / document.getElementById('pages-per-day').value);
+        console.log(days, pages);
+        setTargetDays(days);
+    }
 
     function addSpecialOrder(bookNumber) {
         const book = books[bookNumber];
 
-        const $container = document.createElement('div');
         const $bookListContainer = document.getElementById('book-list-container');
+
+        const $container = document.createElement('div');
+        $container.id = 'special-order-' + bookNumber + '-container';
         $container.classList.add('data-container');
 
         const $header = document.createElement('h2');
@@ -290,8 +312,7 @@
 	}
 
 	function outputSchedule(schedule) {
-        const $schedule = document.getElementById('schedule');
-        $schedule.style.visibility = 'visible';
+        document.getElementById('schedule').style.visibility = 'visible';
 		let bookTitle = '';
 
         const $scheduleBody = document.getElementById('schedule-body');
