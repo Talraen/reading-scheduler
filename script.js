@@ -49,7 +49,10 @@
             const id = 'book-' + i;
             const $li = document.createElement('li');
 
-            // TODO: Calculate pages from chapters, remove it from data (also remove density)
+            books[i].pages = 0;
+            for (let j = 0; j < books[i].chapters.length; j++) {
+                books[i].pages += books[i].chapters[j].pages;
+            }
             books[i].wordsPerPage = books[i].words / books[i].pages;
             
             const $checkbox = document.createElement('input');
