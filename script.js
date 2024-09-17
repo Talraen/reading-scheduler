@@ -227,7 +227,7 @@
 	}
 
 	function getDays(pages) {
-        const [weekdays, weightPerDay] = getWeekdays();
+        const [weekdays, ] = getWeekdays();
 
         switch(document.querySelector('input[name=duration-type]:checked').value) {
 			case 'pages-per-day':
