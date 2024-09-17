@@ -91,6 +91,7 @@
         // Calculate days based on default pages per day value
         let days = Math.round(pages / document.getElementById('pages-per-day').value);
         setTargetDays(days);
+        // TODO: Update the duration values whenever the selected one is changed
     }
 
     // TODO: Have this work even if multiple series are included
