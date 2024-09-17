@@ -1,13 +1,14 @@
 (function() {
 	let seriesName = 'wheel-of-time';
     let books = [];
+    let specialOrderBooks = {};
 
     fetch('./' + seriesName + '.json')
         .then(response => response.json())
         .then(bookData => {
             books = bookData;
             const $bookList = document.getElementById('book-list');
-            
+
             let pages = 0;
             for (let i = 0; i < books.length; i++) {
                 const id = 'book-' + i;
@@ -27,7 +28,9 @@
                 $bookList.appendChild($li);
                 pages += books[i].pages;
 
-                addNewSpringEntry(books[i], i);
+                if (typeof books[i].ordering !== 'undefined') {
+                    addSpecialOrder(i);
+                }
             }
         
             // Calculate days based on default pages per day value
@@ -35,36 +38,62 @@
             setTargetDays(days);
         });
 
-    function addNewSpringEntry(book, i) {
-        const $newSpringList = document.getElementById('new-spring-list');
-        const id = 'new-spring-' + i;
-        const $li = document.createElement('li');
-        
-        const $radio = document.createElement('input');
-        $radio.type = 'radio';
-        $radio.value = i;
-        $radio.name = 'new-spring';
-        $radio.id = id;
+    function addSpecialOrder(bookNumber) {
+        const book = books[bookNumber];
 
-        let text;
-        if (i > 0) {
-            text = 'After ' + book.title;
-            if (book.newSpring) {
-                text += ' (' + book.newSpring + ')';
+        const $container = document.createElement('div');
+        const $bookListContainer = document.getElementById('book-list-container');
+        $container.classList.add('data-container');
+
+        const $header = document.createElement('h2');
+        $header.appendChild(document.createTextNode('Read ' + book.title + '\u2026'));
+        $container.appendChild($header);
+
+        const $list = document.createElement('ul');
+        $container.appendChild($list);
+
+        specialOrderBooks[bookNumber] = true;
+
+        $bookListContainer.parentNode.insertBefore($container, $bookListContainer.nextSibling);
+
+        for (let i = 0; i < book.ordering.length; i++) {
+            const orderEntry = book.ordering[i];
+
+            let text;
+            let after = null;
+            if (typeof orderEntry.first !== 'undefined' && orderEntry.first) {
+                text = 'First';
+                after = -1;
+            } else if (typeof orderEntry.after !== undefined && books[orderEntry.after] !== 'undefined') {
+                text = 'After ' + books[orderEntry.after].title;
+                after = orderEntry.after;
             }
-        } else {
-            text = 'First (chronological)';
-            $radio.checked = true;
+            if (typeof orderEntry.note === 'string') {
+                text += ' (' + orderEntry.note + ')';
+            }
+
+            const id = 'special-order-' + bookNumber + '-' + i;
+            const $li = document.createElement('li');
+        
+            const $radio = document.createElement('input');
+            $radio.type = 'radio';
+            $radio.value = after;
+            $radio.name = 'special-order-' + bookNumber;
+            $radio.id = id;
+
+            if (typeof orderEntry.default !== 'undefined' && orderEntry.default) {
+                $radio.checked = true;
+            }
+
+            $li.appendChild($radio);
+
+            const $label = document.createElement('label');
+            $label.htmlFor = id;
+            $label.appendChild(document.createTextNode(text));
+            $li.appendChild($label);
+
+            $list.appendChild($li);
         }
-
-        $li.appendChild($radio);
-
-        const $label = document.createElement('label');
-        $label.htmlFor = id;
-        $label.appendChild(document.createTextNode(text));
-        $li.appendChild($label);
-
-        $newSpringList.appendChild($li);
     }
 
     function setTargetDays(days) {
@@ -95,16 +124,21 @@
 
         readingList = [];
         showChapterTitles = document.getElementById('show-chapter-titles').checked;
-        const newSpringPosition = document.querySelector('input[name="new-spring"]:checked').value;
 
-        if (newSpringPosition == 0) {
-            processBook(0);
+        for (let i in specialOrderBooks) {
+            if (specialOrderBooks.hasOwnProperty(i)) {
+                specialOrderBooks[i] = parseInt(document.querySelector('input[name="special-order-' + i + '"]:checked').value);
+            }
         }
-        for (let i = 1; i < books.length; i++) {
-            processBook(i);
 
-            if (i == newSpringPosition) {
-                processBook(0);
+        for (let i = -1; i < books.length; i++) {
+            if (i >= 0 && typeof books[i].ordering === 'undefined') {
+                processBook(i);
+            }
+            for (let bookNumber in specialOrderBooks) {
+                if (specialOrderBooks.hasOwnProperty(bookNumber) && specialOrderBooks[bookNumber] === i) {
+                    processBook(bookNumber);
+                }
             }
         }
 
