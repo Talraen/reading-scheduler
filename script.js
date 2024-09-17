@@ -84,6 +84,9 @@
             for (let j = 0; j < books[i].chapters.length; j++) {
                 books[i].pages += books[i].chapters[j].pages;
             }
+            if (typeof books[i].words === 'undefined') {
+                books[i].words = books[i].pages * WORDS_PER_PAGE; // Default to normal page size if word count is unknown or not applicable
+            }
             books[i].wordsPerPage = books[i].words / books[i].pages;
             
             const $checkbox = document.createElement('input');
