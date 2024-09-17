@@ -1,6 +1,6 @@
 (function() {
     // TODO: Make output printable or saveable as PDF
-    // TODO: Add Warbreaker data
+    // TODO: Check Warbreaker data against actual book
     const WORDS_PER_PAGE = 400;
     let books = [];
     let specialOrderBooks = {};
