@@ -4,8 +4,10 @@
     const WORDS_PER_PAGE = 400;
     let books = [];
     let specialOrderBooks = {};
-    let optionsShown = {'show-chapter-titles': true};
-    // TODO: Add option for "show in chronological order" if the list isn't already
+    let optionsShown = {
+        'show-chapter-titles': true,
+        'publish-order': false,
+    };
 
     const $series = document.getElementById('series');
     $series.addEventListener('change', function(event) {
@@ -49,6 +51,8 @@
 
     function loadBooks(bookData) {
         books = bookData;
+        let inPublishOrder = true;
+        let lastPublishDate = null;
         const $bookList = document.getElementById('book-list');
         emptyElement($bookList);
 
@@ -67,6 +71,14 @@
         for (let i = 0; i < books.length; i++) {
             const id = 'book-' + i;
             const $li = document.createElement('li');
+
+            if (typeof books[i].ordering === 'undefined') { // Ignore books with ordering when it comes to checking release order
+                const publishDate = new Date(books[i].publishDate);
+                if (lastPublishDate !== null && publishDate < lastPublishDate) {
+                    inPublishOrder = false;
+                }
+                lastPublishDate = publishDate;
+            }
 
             books[i].pages = 0;
             for (let j = 0; j < books[i].chapters.length; j++) {
@@ -103,6 +115,8 @@
                 }
             }
         }
+
+        optionsShown['publish-order'] = !inPublishOrder;
 
         let showOptions = false;
         for (let name in optionsShown) {
@@ -285,7 +299,18 @@
             }
         }
 
-        for (let i = -1; i < books.length; i++) {
+        let bookOrder = [];
+        for (let i = 0; i < books.length; i++) {
+            bookOrder.push(i);
+        }
+        if (document.getElementById('publish-order').checked) {
+            bookOrder.sort((a, b) => {
+                return books[a].publishDate.localeCompare(books[b].publishDate);
+            });
+        }
+        bookOrder.unshift(-1);
+
+        bookOrder.forEach(i => {
             if (i >= 0 && typeof books[i].ordering === 'undefined') {
                 processBook(i);
             }
@@ -294,7 +319,7 @@
                     processBook(bookNumber);
                 }
             }
-        }
+        });
 
         outputSchedule(processReadingList(readingList));
     });
