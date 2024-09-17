@@ -1,68 +1,74 @@
 <!DOCTYPE html>
 <html>
-<head>
-<title>Wheel of Time Reading Scheduler</title>
-<link rel="stylesheet" type="text/css" href="style.css" />
-</head>
-<body>
-<h1>Wheel of Time Reading Schedule</h1>
-<form id="options">
-	<div class="data-container">
-		<h2>Duration</h2>
-		<ul>
-			<li><input type="radio" name="duration-type" value="pages-per-day" checked="checked" /> Read <input type="text" name="pages-per-day" value="50" size="5" /> pages per day</li>
-			<li><input type="radio" name="duration-type" value="days" /> Finish books in <input type="text" name="days" value="199" size="5" /> days</li>
-			<li><input type="radio" name="duration-type" value="date" /> Finish books on <input type="text" name="date-mm" value="01" size="2" maxlength="2" />/<input type="text" name="date-dd" value="08" size="2" maxlength="2" />/<input type="text" name="date-yyyy" value="2013" size="4" maxlength="4" /></li>
-		</ul>
-		Allowed Variance: <input type="text" name="variance" value="50" size="2" />%
-	</div>
-	<div class="data-container">
-		<h2>Read On</h2>
-		<ul>
-			<li><input type="checkbox" name="day-0" checked="checked" /> Sunday</li>
-			<li><input type="checkbox" name="day-1" checked="checked" /> Monday</li>
-			<li><input type="checkbox" name="day-2" checked="checked" /> Tuesday</li>
-			<li><input type="checkbox" name="day-3" checked="checked" /> Wednesday</li>
-			<li><input type="checkbox" name="day-4" checked="checked" /> Thursday</li>
-			<li><input type="checkbox" name="day-5" checked="checked" /> Friday</li>
-			<li><input type="checkbox" name="day-6" checked="checked" /> Saturday</li>
-		</ul>
-	</div>
-	<div class="data-container">
-		<h2>Books</h2>
-		<ul id="book-list">
-		</ul>
-	</div>
-	<div class="data-container">
-		<h2>Read New Spring</h2>
-		<ul id="new-spring-list">
-			<li><input type="radio" name="new-spring-position" value="0" checked="checked" /> First (chronological)</li>
-		</ul>
-	</div>
-	<div class="data-container">
-		<h2>Options</h2>
-		<div><input type="checkbox" name="show-chapter-titles" /> Show chapter titles</div>
-	</div>
-	<div class="data-container">
-		<button id="create-schedule">Create Schedule</button>
-	</div>
-</form>
-<div id="schedule">
-	<table>
-		<thead>
-			<tr>
-				<th>Date</th>
-				<th>Chapters</th>
-				<th>Pages</th>
-			</tr>
-		</thead>
-		<tbody>
-		</tbody>
-	</table>
-</div>
-<script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
-<script type="text/javascript" src="jquery.cookie.js"></script>
-<script type="text/javascript" src="jquery.readerForm.js"></script>
-<script type="text/javascript" src="script.js"></script>
-</body>
+	<head>
+		<title>Wheel of Time Reading Scheduler</title>
+		<link rel="stylesheet" type="text/css" href="style.css" />
+	</head>
+	<body>
+		<h1>Wheel of Time Reading Schedule</h1>
+		<form id="options">
+			<div class="data-container">
+				<h2>Duration</h2>
+				<ul>
+					<li>
+						<input type="radio" name="duration-type" id="duration-pages-per-day" value="pages-per-day" checked="checked" />
+						Read <input type="number" name="pages-per-day" id="pages-per-day" value="50" min="1" /> pages per day
+					</li>
+					<li>
+						<input type="radio" name="duration-type" id="duration-days" value="days" />
+						Finish books in <input type="number" name="days" id="days" value="199" min="1"/> days
+					</li>
+					<li>
+						<input type="radio" name="duration-type" id="duration-date" value="date" />
+						Finish books on
+						<input type="number" name="date-month" id="date-month" value="1" min="1" max="12" /> /
+						<input type="number" name="date-day" id="date-day" value="8" min="1" max="31" /> /
+						<input type="number" name="date-year" id="date-year" value="2013" min="1990" max="9999" />
+					</li>
+				</ul>
+				Allowed Variance: <input type="number" name="variance" id="variance" value="50" min="0" />%
+			</div>
+			<div class="data-container">
+				<h2>Read On</h2>
+				<ul>
+					<li><input type="checkbox" name="day-0" checked="checked" id="day-0" /><label for="day-0">Sunday</label></li>
+					<li><input type="checkbox" name="day-1" checked="checked" id="day-1" /><label for="day-1">Monday</label></li>
+					<li><input type="checkbox" name="day-2" checked="checked" id="day-2" /><label for="day-2">Tuesday</label></li>
+					<li><input type="checkbox" name="day-3" checked="checked" id="day-3" /><label for="day-3">Wednesday</label></li>
+					<li><input type="checkbox" name="day-4" checked="checked" id="day-4" /><label for="day-4">Thursday</label></li>
+					<li><input type="checkbox" name="day-5" checked="checked" id="day-5" /><label for="day-5">Friday</label></li>
+					<li><input type="checkbox" name="day-6" checked="checked" id="day-6" /><label for="day-6">Saturday</label></li>
+				</ul>
+			</div>
+			<div class="data-container">
+				<h2>Books</h2>
+				<ul id="book-list"></ul>
+			</div>
+			<div class="data-container">
+				<h2>Read New Spring</h2>
+				<ul id="new-spring-list"></ul>
+			</div>
+			<div class="data-container">
+				<h2>Options</h2>
+				<div><input type="checkbox" name="show-chapter-titles" id="show-chapter-titles" /><label for="show-chapter-titles">Show chapter titles</label></div>
+			</div>
+			<div class="data-container">
+				<button id="create-schedule">Create Schedule</button>
+			</div>
+		</form>
+		<div id="schedule">
+			<table>
+				<thead>
+					<tr>
+						<th>Date</th>
+						<th>Chapters</th>
+						<th>Pages</th>
+					</tr>
+				</thead>
+				<tbody id="schedule-body">
+				</tbody>
+			</table>
+		</div>
+		<script type="text/javascript" src="script.js"></script>
+	</body>
 </html>
