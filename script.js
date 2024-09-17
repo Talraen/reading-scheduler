@@ -6,11 +6,21 @@
     const $series = document.getElementById('series');
     $series.addEventListener('change', function(event) {
         event.preventDefault();
-        fetch('./' + this.value + '.json')
-        .then(response => response.json())
-        .then(bookData => {
-            loadBooks(bookData);
-        });
+        
+        const fileList = this.value.split(',');
+        let promises = [];
+        for (let i = 0; i < fileList.length; i++) {
+            promises.push(fetch('./' + fileList[i] + '.json'));
+        }
+        Promise.all(promises)
+            .then(responses => Promise.all(responses.map(r => r.json())))
+            .then(seriesData => {
+                bookData = [];
+                for (let i = 0; i < seriesData.length; i++) {
+                    bookData = bookData.concat(seriesData[i]);
+                }
+                loadBooks(bookData);
+            })
     });
     $series.dispatchEvent(new Event('change'));
 
