@@ -127,7 +127,6 @@
     }
 
 	function processReadingList(readingList) {
-        let actualDays = 0;
 		let pages = 0;
 		for (let i = 0; i < readingList.length; i++) {
 			pages += readingList[i].pages;
