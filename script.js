@@ -236,8 +236,8 @@
 
 	function outputSchedule(schedule) {
         const $schedule = document.getElementById('schedule');
-        $schedule.style.display = 'block';
-		var book = '';
+        $schedule.style.visibility = 'visible';
+		var bookTitle = '';
 		var today = new Date();
 		today = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 12);
 		today.setDate(today.getDate() + 1);
@@ -256,18 +256,17 @@
             const $pages = document.createElement('td');
 
 			for (var j = 0; j < schedule[i].length; j++) {
-				if (schedule[i][j].book != book) {
-                    const $chapterDiv = document.createElement('div');
-                    $chapterDiv.classList.add('book-header');
-                    $chapterDiv.appendChild(document.createTextNode(schedule[i][j].book));
-                    $chapters.appendChild($chapterDiv);
+				if (schedule[i][j].book != bookTitle) {
+                    const $bookHeaderDiv = document.createElement('div');
+                    $bookHeaderDiv.classList.add('book-header');
+                    $bookHeaderDiv.appendChild(document.createTextNode(schedule[i][j].book));
+                    $chapters.appendChild($bookHeaderDiv);
 
-                    const $pagesDiv = document.createElement('div');
-                    $pagesDiv.classList.add('page-spacer');
-                    $pagesDiv.appendChild(document.createTextNode('0'));
-                    $pages.appendChild($pagesDiv);
+                    const $pageSpacerDiv = document.createElement('div');
+                    $pageSpacerDiv.appendChild(document.createTextNode('\u00A0')); // &nbsp;
+                    $pages.appendChild($pageSpacerDiv);
 
-                    book = schedule[i][j].book;
+                    bookTitle = schedule[i][j].book;
 				}
 				let text = schedule[i][j].chapter;
 				if (showChapterTitles) {
