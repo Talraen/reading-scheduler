@@ -93,6 +93,7 @@
         setTargetDays(days);
     }
 
+    // TODO: Have this work even if multiple series are included
     function addSpecialOrder(bookNumber) {
         const book = books[bookNumber];
 
