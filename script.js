@@ -77,7 +77,6 @@
     }
 
     function setTargetDate(date) {
-        console.log(date);
         const $day = document.getElementById('date-day');
         const $month = document.getElementById('date-month');
         const $year = document.getElementById('date-year');
@@ -128,11 +127,12 @@
     }
 
 	function processReadingList(readingList) {
+        let actualDays = 0;
 		let pages = 0;
 		for (let i = 0; i < readingList.length; i++) {
 			pages += readingList[i].pages;
 		}
-		days = getDays(pages);
+		let days = getDays(pages);
 		if (days < 1) {
 			return;
 		}
@@ -141,14 +141,14 @@
 		today = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 12);
         today.setDate(today.getDate() + 1);
 		
-        const [weekdays, ] = getWeekdays();
+        const [weekdays, weightPerDay] = getWeekdays();
 
 		let schedule = [];
 		let readingToday = [];
 		let pagesToday = 0;
 		let variance = document.getElementById('variance').value / 100;
 
-		let target = getTarget(pages, days, variance);
+		let target = getTarget(pages * weightPerDay, days, variance);
 		reviseReadingList(readingList, target);
 
 		for (let i = 0; i < readingList.length; i++) {
@@ -156,7 +156,7 @@
                 today.setDate(today.getDate() + 1);
             }
 
-            target = getTarget(pages * weekdays[today.getDay()], days, variance);
+            target = getTarget(pages * weekdays[today.getDay()] / weightPerDay, days, variance);
 			
 			if (pagesToday + readingList[i].pages < target.exact) {
 				readingToday.push(readingList[i]);
@@ -171,7 +171,7 @@
                     content: readingToday,
                 });
 				readingToday = [readingList[i]];
-				days--;
+				days -= weekdays[today.getDay()] / weightPerDay;
 				pages -= pagesToday;
 				pagesToday = readingList[i].pages;
                 today.setDate(today.getDate() + 1);
@@ -228,14 +228,13 @@
 
 	function getDays(pages) {
         const [weekdays, weightPerDay] = getWeekdays();
-        console.log(weightPerDay);
 
         switch(document.querySelector('input[name=duration-type]:checked').value) {
 			case 'pages-per-day':
-				return Math.round(pages / document.getElementById('pages-per-day').value / weightPerDay);
+				return Math.round(pages / document.getElementById('pages-per-day').value);
 				
 			case 'days':
-                return parseInt(document.getElementById('days').value / weightPerDay);
+                return parseInt(document.getElementById('days').value);
 				
 			case 'date':
 				let today = new Date();
