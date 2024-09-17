@@ -243,8 +243,8 @@
 				let weekday = date.getDay();
 				let days = 0;
 				while (date > today) {
-					if (weekdays[weekday]) {
-						days += weekdays[weekday];
+					if (weekdays[weekday] > 0) {
+						days++;
 					}
 					date -= 24 * 60 * 60 * 1000;
 					weekday--;
