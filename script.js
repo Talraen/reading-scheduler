@@ -1,6 +1,7 @@
 (function() {
     let books = [];
     let specialOrderBooks = {};
+    let optionsShown = {'show-chapter-titles': true};
 
     const $series = document.getElementById('series');
     $series.addEventListener('change', function(event) {
@@ -18,7 +19,7 @@
         const $bookList = document.getElementById('book-list');
         emptyElement($bookList);
 
-        document.getElementById('schedule').style.visibility = 'hidden';
+        document.getElementById('schedule').style.display = 'none';
 
         for (let i in specialOrderBooks) {
             if (specialOrderBooks.hasOwnProperty(i)) {
@@ -29,6 +30,7 @@
         specialOrderBooks = {};
 
         let pages = 0;
+        optionsShown['show-chapter-titles'] = false;
         for (let i = 0; i < books.length; i++) {
             const id = 'book-' + i;
             const $li = document.createElement('li');
@@ -50,11 +52,34 @@
             if (typeof books[i].ordering !== 'undefined') {
                 addSpecialOrder(i);
             }
+
+            if (!optionsShown['show-chapter-titles']) {
+                for (let j = 0; j < books[i].chapters.length; j++) {
+                    const chapter = books[i].chapters[j];
+                    if (typeof chapter.title === 'string') {
+                        optionsShown['show-chapter-titles'] = true;
+                        break;
+                    }
+                }
+            }
         }
+
+        let showOptions = false;
+        for (let name in optionsShown) {
+            if (optionsShown.hasOwnProperty(name)) {
+                const $option = document.getElementById('option-' + name);
+                if (optionsShown[name]) {
+                    showOptions = true;
+                    $option.style.display = 'block';
+                } else {
+                    $option.style.display = 'none';
+                }
+            }
+        }
+        document.getElementById('options-container').style.display = showOptions ? 'block' : 'none';
     
         // Calculate days based on default pages per day value
         let days = Math.round(pages / document.getElementById('pages-per-day').value);
-        console.log(days, pages);
         setTargetDays(days);
     }
 
@@ -312,7 +337,7 @@
 	}
 
 	function outputSchedule(schedule) {
-        document.getElementById('schedule').style.visibility = 'visible';
+        document.getElementById('schedule').style.display = 'block';
 		let bookTitle = '';
 
         const $scheduleBody = document.getElementById('schedule-body');
@@ -338,7 +363,7 @@
                     bookTitle = content[j].book;
 				}
 				let text = content[j].chapter;
-				if (showChapterTitles) {
+				if (showChapterTitles && typeof content[j].title === 'string') {
 					text += ': ' + content[j].title;
 				} else if (content[j].part) {
 					text += ' (part ' + content[j].part + ')';

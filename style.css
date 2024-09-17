@@ -24,7 +24,7 @@ input[type=number] {
 }
 div#schedule {
 	clear: both;
-	visibility: hidden
+	display: none;
 }
 table {
 	border-collapse: collapse;

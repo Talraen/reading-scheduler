@@ -11,6 +11,7 @@
 				<h2>Series</h2>
 				<select name="series" id="series">
 					<option value="wheel-of-time">Wheel of Time</option>
+					<option value="mistborn">Mistborn</option>
 				</select>
 			</div>
 			<div class="data-container">
@@ -71,9 +72,11 @@
 				<h2>Books</h2>
 				<ul id="book-list"></ul>
 			</div>
-			<div class="data-container">
+			<div class="data-container" id="options-container">
 				<h2>Options</h2>
-				<div><input type="checkbox" name="show-chapter-titles" id="show-chapter-titles" /><label for="show-chapter-titles">Show chapter titles</label></div>
+				<div id="option-show-chapter-titles">
+					<input type="checkbox" name="show-chapter-titles" id="show-chapter-titles" /><label for="show-chapter-titles">Show chapter titles</label>
+				</div>
 			</div>
 			<div class="data-container">
 				<button id="create-schedule">Create Schedule</button>
