@@ -1,4 +1,5 @@
 (function() {
+    const WORDS_PER_PAGE = 400;
     let books = [];
     let specialOrderBooks = {};
     let optionsShown = {'show-chapter-titles': true};
@@ -44,6 +45,8 @@
         for (let i = 0; i < books.length; i++) {
             const id = 'book-' + i;
             const $li = document.createElement('li');
+
+            books[i].wordsPerPage = books[i].words / books[i].pages;
             
             const $checkbox = document.createElement('input');
             $checkbox.type = 'checkbox';
@@ -57,7 +60,7 @@
             $li.appendChild($label);
 
             $bookList.appendChild($li);
-            pages += books[i].pages;
+            pages += Math.round(books[i].words / WORDS_PER_PAGE);
 
             if (typeof books[i].ordering !== 'undefined') {
                 addSpecialOrder(i);
@@ -209,22 +212,25 @@
         const $includeBook = document.getElementById('book-' + bookNumber);
         if ($includeBook.checked) {
 			for (let i = 0; i < book.chapters.length; i++) {
+                const words = book.chapters[i].pages * book.wordsPerPage;
 				readingList.push({
 					book: book.title,
 					chapter: book.chapters[i].chapter,
 					title: book.chapters[i].title,
-					pages: book.chapters[i].pages
+					pages: book.chapters[i].pages,
+                    words: Math.round(words),
+                    effectivePages: Math.round(words / WORDS_PER_PAGE),
 				});
 			}
 		}
     }
 
 	function processReadingList(readingList) {
-		let pages = 0;
+		let effectivePages = 0;
 		for (let i = 0; i < readingList.length; i++) {
-			pages += readingList[i].pages;
+			effectivePages += readingList[i].effectivePages;
 		}
-		let days = getDays(pages);
+		let days = getDays(effectivePages);
 		if (days < 1) {
 			return;
 		}
@@ -240,7 +246,7 @@
 		let pagesToday = 0;
 		let variance = document.getElementById('variance').value / 100;
 
-		let target = getTarget(pages * weightPerDay, days, variance);
+		let target = getTarget(effectivePages * weightPerDay, days, variance);
 		reviseReadingList(readingList, target);
 
 		for (let i = 0; i < readingList.length; i++) {
@@ -248,14 +254,14 @@
                 today.setDate(today.getDate() + 1);
             }
 
-            target = getTarget(pages * weekdays[today.getDay()] / weightPerDay, days, variance);
+            target = getTarget(effectivePages * weekdays[today.getDay()] / weightPerDay, days, variance);
 			
-			if (pagesToday + readingList[i].pages < target.exact) {
+			if (pagesToday + readingList[i].effectivePages < target.exact) {
 				readingToday.push(readingList[i]);
-				pagesToday += readingList[i].pages;
-			} else if (Math.abs(target.exact - pagesToday) > Math.abs(target.exact - (pagesToday + readingList[i].pages)) || readingToday.length == 0) {
+				pagesToday += readingList[i].effectivePages;
+			} else if (Math.abs(target.exact - pagesToday) > Math.abs(target.exact - (pagesToday + readingList[i].effectivePages)) || readingToday.length == 0) {
 				readingToday.push(readingList[i]);
-				pagesToday += readingList[i].pages;
+				pagesToday += readingList[i].effectivePages;
 			} else {
 				schedule.push({
                     weekday: today.toLocaleDateString('en-US', {weekday: 'long'}),
@@ -264,8 +270,8 @@
                 });
 				readingToday = [readingList[i]];
 				days -= weekdays[today.getDay()] / weightPerDay;
-				pages -= pagesToday;
-				pagesToday = readingList[i].pages;
+				effectivePages -= pagesToday;
+				pagesToday = readingList[i].effectivePages;
                 today.setDate(today.getDate() + 1);
 			}
 		}
@@ -285,9 +291,10 @@
         // TODO: Make this take into account weighted weekdays
 		const maximum = target.maximum - target.minimum;
 		for (let i = 0; i < readingList.length; i++) {
-			if (readingList[i].pages > maximum) {
+			if (readingList[i].effectivePages > maximum) {
 				let parts = 2;
-				while (Math.round(readingList[i].pages / parts) > maximum) {
+                const pageRatio = readingList[i].pages / readingList[i].effectivePages;
+				while (Math.round(readingList[i].effectivePages / parts) > maximum) {
 					parts++;
 				}
 				let partData = [];
@@ -295,12 +302,16 @@
 				for (let j = 0; j < parts; j++) {
 					pages = Math.round(pagesLeft / (parts - j));
 					pagesLeft -= pages;
+
+                    const effectivePages = pages * pageRatio;
 					partData.push({
 						book: readingList[i].book,
 						chapter: readingList[i].chapter,
 						title: readingList[i].title + ' (part ' + (j + 1) + ')',
 						book: readingList[i].book,
 						pages: pages,
+                        words: Math.round(effectivePages * WORDS_PER_PAGE),
+                        effectivePages: Math.round(effectivePages),
 						part: j + 1
 					});
 				}
