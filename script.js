@@ -77,8 +77,9 @@
     }
 
     function setTargetDate(date) {
-        const $day = document.getElementById('date-month');
-        const $month = document.getElementById('date-day');
+        console.log(date);
+        const $day = document.getElementById('date-day');
+        const $month = document.getElementById('date-month');
         const $year = document.getElementById('date-year');
 
         $day.value = date.getDate();
@@ -115,7 +116,7 @@
         const book = books[bookNumber];
         const $includeBook = document.getElementById('book-' + bookNumber);
         if ($includeBook.checked) {
-			for (var i = 0; i < book.chapters.length; i++) {
+			for (let i = 0; i < book.chapters.length; i++) {
 				readingList.push({
 					book: book.title,
 					chapter: book.chapters[i].chapter,
@@ -127,59 +128,79 @@
     }
 
 	function processReadingList(readingList) {
-		var pages = 0;
-		for (var i = 0; i < readingList.length; i++) {
+		let pages = 0;
+		for (let i = 0; i < readingList.length; i++) {
 			pages += readingList[i].pages;
 		}
 		days = getDays(pages);
 		if (days < 1) {
 			return;
 		}
+
+        let today = new Date();
+		today = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 12);
+        today.setDate(today.getDate() + 1);
 		
+        const [weekdays, ] = getWeekdays();
+
 		let schedule = [];
-		let today = [];
+		let readingToday = [];
 		let pagesToday = 0;
 		let variance = document.getElementById('variance').value / 100;
 
-		var target = getTarget(pages, days, variance);
+		let target = getTarget(pages, days, variance);
 		reviseReadingList(readingList, target);
 
-		for (var i = 0; i < readingList.length; i++) {
-			target = getTarget(pages, days, variance);
+		for (let i = 0; i < readingList.length; i++) {
+            while (weekdays[today.getDay()] <= 0) {
+                today.setDate(today.getDate() + 1);
+            }
+
+            target = getTarget(pages * weekdays[today.getDay()], days, variance);
 			
 			if (pagesToday + readingList[i].pages < target.exact) {
-				today.push(readingList[i]);
+				readingToday.push(readingList[i]);
 				pagesToday += readingList[i].pages;
-			} else if (Math.abs(target.exact - pagesToday) > Math.abs(target.exact - (pagesToday + readingList[i].pages)) || today.length == 0) {
-				today.push(readingList[i]);
+			} else if (Math.abs(target.exact - pagesToday) > Math.abs(target.exact - (pagesToday + readingList[i].pages)) || readingToday.length == 0) {
+				readingToday.push(readingList[i]);
 				pagesToday += readingList[i].pages;
 			} else {
-				schedule.push(today);
-				today = [readingList[i]];
+				schedule.push({
+                    weekday: today.toLocaleDateString('en-US', {weekday: 'long'}),
+                    date: today.toLocaleDateString('en-US'),
+                    content: readingToday,
+                });
+				readingToday = [readingList[i]];
 				days--;
 				pages -= pagesToday;
 				pagesToday = readingList[i].pages;
+                today.setDate(today.getDate() + 1);
 			}
 		}
 		
-		if (today.length > 0) {
-			schedule.push(today);
+		if (readingToday.length > 0) {
+			schedule.push({
+                weekday: today.toLocaleDateString('en-US', {weekday: 'long'}),
+                date: today.toLocaleDateString('en-US'),
+                content: readingToday,
+            });
 		}
 
 		return schedule;
 	}
 
     function reviseReadingList(readingList, target) {
-		var maximum = target.maximum - target.minimum;
-		for (var i = 0; i < readingList.length; i++) {
+        // TODO: Make this take into account weighted weekdays
+		const maximum = target.maximum - target.minimum;
+		for (let i = 0; i < readingList.length; i++) {
 			if (readingList[i].pages > maximum) {
-				var parts = 2;
+				let parts = 2;
 				while (Math.round(readingList[i].pages / parts) > maximum) {
 					parts++;
 				}
-				var partData = [];
-				var pagesLeft = readingList[i].pages;
-				for (var j = 0; j < parts; j++) {
+				let partData = [];
+				let pagesLeft = readingList[i].pages;
+				for (let j = 0; j < parts; j++) {
 					pages = Math.round(pagesLeft / (parts - j));
 					pagesLeft -= pages;
 					partData.push({
@@ -192,7 +213,7 @@
 					});
 				}
 				readingList.splice(i, 1);
-				for (var j = partData.length - 1; j >= 0; j--) {
+				for (let j = partData.length - 1; j >= 0; j--) {
 					readingList.splice(i, 0, partData[j]);
 				}
 			}
@@ -200,21 +221,23 @@
 	}
 
 	function getTarget(pages, days, variance) {
-		var target = Math.round(pages / days);
-		var targetVariance = Math.round(target * variance);
+		const target = Math.round(pages / days);
+		const targetVariance = Math.round(target * variance);
 		return {exact: target, minimum: target - targetVariance, maximum: target + targetVariance};
 	}
 
 	function getDays(pages) {
-		switch(document.querySelector('input[name=duration-type]:checked').value) {
+        const [weekdays, weightPerDay] = getWeekdays();
+        console.log(weightPerDay);
+
+        switch(document.querySelector('input[name=duration-type]:checked').value) {
 			case 'pages-per-day':
-				return Math.round(pages / document.getElementById('pages-per-day').value);
+				return Math.round(pages / document.getElementById('pages-per-day').value / weightPerDay);
 				
 			case 'days':
-                return parseInt(document.getElementById('days').value);
+                return parseInt(document.getElementById('days').value / weightPerDay);
 				
 			case 'date':
-				const weekdays = getWeekdays();
 				let today = new Date();
                 today = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 16);
 				let date = new Date(document.getElementById('date-year').value, document.getElementById('date-month').value - 1, document.getElementById('date-day').value, 12);
@@ -222,7 +245,7 @@
 				let days = 0;
 				while (date > today) {
 					if (weekdays[weekday]) {
-						days++;
+						days += weekdays[weekday];
 					}
 					date -= 24 * 60 * 60 * 1000;
 					weekday--;
@@ -230,49 +253,42 @@
 						weekday += 7;
 					}
 				}
-				return days;
+				return Math.ceil(days);
 		}
 	}
 
 	function outputSchedule(schedule) {
         const $schedule = document.getElementById('schedule');
         $schedule.style.visibility = 'visible';
-		var bookTitle = '';
-		var today = new Date();
-		today = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 12);
-		today.setDate(today.getDate() + 1);
-		
-        const weekdays = getWeekdays();
+		let bookTitle = '';
 
         const $scheduleBody = document.getElementById('schedule-body');
         emptyElement($scheduleBody);
-		for (var i = 0; i < schedule.length; i++) {
-			while (!weekdays[today.getDay()]) {
-				today.setDate(today.getDate() + 1);
-			}
+		for (let i = 0; i < schedule.length; i++) {
+            const content = schedule[i].content;
 			
             const $tr = document.createElement('tr');
             const $chapters = document.createElement('td');
             const $pages = document.createElement('td');
 
-			for (var j = 0; j < schedule[i].length; j++) {
-				if (schedule[i][j].book != bookTitle) {
+			for (let j = 0; j < content.length; j++) {
+				if (content[j].book != bookTitle) {
                     const $bookHeaderDiv = document.createElement('div');
                     $bookHeaderDiv.classList.add('book-header');
-                    $bookHeaderDiv.appendChild(document.createTextNode(schedule[i][j].book));
+                    $bookHeaderDiv.appendChild(document.createTextNode(content[j].book));
                     $chapters.appendChild($bookHeaderDiv);
 
                     const $pageSpacerDiv = document.createElement('div');
                     $pageSpacerDiv.appendChild(document.createTextNode('\u00A0')); // &nbsp;
                     $pages.appendChild($pageSpacerDiv);
 
-                    bookTitle = schedule[i][j].book;
+                    bookTitle = content[j].book;
 				}
-				let text = schedule[i][j].chapter;
+				let text = content[j].chapter;
 				if (showChapterTitles) {
-					text += ': ' + schedule[i][j].title;
-				} else if (schedule[i][j].part) {
-					text += ' (part ' + schedule[i][j].part + ')';
+					text += ': ' + content[j].title;
+				} else if (content[j].part) {
+					text += ' (part ' + content[j].part + ')';
 				}
 
                 const $chapterDiv = document.createElement('div');
@@ -280,29 +296,45 @@
                 $chapters.appendChild($chapterDiv);
 
                 const $pagesDiv = document.createElement('div');
-                $pagesDiv.appendChild(document.createTextNode(schedule[i][j].pages));
+                $pagesDiv.appendChild(document.createTextNode(content[j].pages));
                 $pages.appendChild($pagesDiv);
 			}
 
             const $date = document.createElement('td');
-            $date.appendChild(document.createTextNode(today.toLocaleDateString()));
+
+            const $weekdayDiv = document.createElement('div');
+            $weekdayDiv.appendChild(document.createTextNode(schedule[i].weekday));
+            $date.appendChild($weekdayDiv);
+
+            const $dateDiv = document.createElement('div');
+            $dateDiv.appendChild(document.createTextNode(schedule[i].date));
+            $date.appendChild($dateDiv);
 
             $tr.appendChild($date);
             $tr.appendChild($chapters);
             $tr.appendChild($pages);
 
             $scheduleBody.appendChild($tr);
-
-			today.setDate(today.getDate() + 1);
 		}
 	}
 
     function getWeekdays() {
-        var weekdays = [];
-		for (var i = 0; i < 7; i++) {
-			weekdays.push(document.getElementById('day-' + i).checked);
+        let weekdays = [];
+        let totalWeight = 0;
+        let countedDays = 0;
+		for (let i = 0; i < 7; i++) {
+            if (document.getElementById('day-' + i).checked) {
+                const weekdayWeight = parseFloat(document.getElementById('day-' + i + '-weight').value);
+                weekdays.push(weekdayWeight);
+                if (weekdayWeight > 0) {
+                    totalWeight += weekdayWeight;
+                    countedDays++;
+                }
+            } else {
+                weekdays.push(0);
+            }
 		}
-        return weekdays;
+        return [weekdays, totalWeight / countedDays];
     }
 
      function emptyElement($element) {

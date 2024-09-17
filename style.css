@@ -19,6 +19,9 @@ div.data-container {
 div.data-container h2 {
 	margin-top: 0;
 }
+input[type=number] {
+	width: 4em;
+}
 div#schedule {
 	clear: both;
 	visibility: hidden
