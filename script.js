@@ -20,8 +20,13 @@
             .then(responses => Promise.all(responses.map(r => r.json())))
             .then(seriesData => {
                 bookData = [];
+                let seriesOffset = 0;
                 for (let i = 0; i < seriesData.length; i++) {
+                    for (let j = 0; j < seriesData[i].length; j++) {
+                        seriesData[i][j].seriesOffset = seriesOffset;
+                    }
                     bookData = bookData.concat(seriesData[i]);
+                    seriesOffset = bookData.length;
                 }
                 loadBooks(bookData);
             })
@@ -37,7 +42,6 @@
         $durationTypes[i].addEventListener('click', updateDurations);
     }
     const $durationInputs = document.querySelectorAll('#duration-container input[type=number]');
-    console.log($durationInputs);
     for (let i = 0; i < $durationInputs.length; i++) {
         $durationInputs[i].addEventListener('blur', updateDurations);
         $durationInputs[i].addEventListener('change', updateDurations);
@@ -117,7 +121,6 @@
         updateDurations();
     }
 
-    // TODO: Have this work even if multiple series are included (add a "series offset" to books when loading multiple series at once)
     function addSpecialOrder(bookNumber) {
         const book = books[bookNumber];
 
@@ -145,16 +148,16 @@
             let after = null;
             if (typeof orderEntry.first !== 'undefined' && orderEntry.first) {
                 text = 'First';
-                after = -1;
+                after = -1 + book.seriesOffset;
             } else if (typeof orderEntry.after !== undefined && books[orderEntry.after] !== 'undefined') {
-                text = 'After ' + books[orderEntry.after].title;
-                after = orderEntry.after;
+                text = 'After ' + books[orderEntry.after + book.seriesOffset].title;
+                after = orderEntry.after + book.seriesOffset;
             }
             if (typeof orderEntry.note === 'string') {
                 text += ' (' + orderEntry.note + ')';
             }
 
-            const id = 'special-order-' + bookNumber + '-' + i;
+            const id = 'special-order-' + bookNumber + '-' + (i + book.seriesOffset);
             const $li = document.createElement('li');
         
             const $radio = document.createElement('input');
