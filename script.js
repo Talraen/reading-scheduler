@@ -99,7 +99,12 @@
                 if (typeof books[i].words === 'undefined') {
                     books[i].words = locations * WORDS_PER_LOCATION;
                 }
-                books[i].wordsPerPage = WORDS_PER_PAGE;
+                if (typeof books[i].pages === 'number') {
+                    // The "pages" attribute on a book is only valid when chapters don't have pages (and is optional)
+                    books[i].wordsPerPage = books[i].words / books[i].pages;
+                } else {
+                    books[i].wordsPerPage = WORDS_PER_PAGE;
+                }
                 const pagesPerLocation = (books[i].words / books[i].wordsPerPage) / locations;
                 let totalPages = 0;
                 for (let j = 0; j < books[i].chapters.length; j++) {
