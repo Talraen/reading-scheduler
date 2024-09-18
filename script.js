@@ -116,7 +116,8 @@
                         totalPages += books[i].chapters[j].pages;
                     }
                 } else if (books[i].chapters.length === 1) {
-                    books[i].chapters[0].pages = Math.round(books[i].words / WORDS_PER_PAGE);
+                    books[i].wordsPerPage = WORDS_PER_PAGE;
+                    books[i].chapters[0].pages = Math.round(books[i].words / books[i].wordsPerPage);
                     if (books[i].chapters[0].pages < 1) {
                         books[i].chapters[0].pages = 1;
                     }
