@@ -2,6 +2,7 @@
     // TODO: Make output printable or saveable as PDF
     // TODO: Check Warbreaker data against actual book
     const WORDS_PER_PAGE = 400;
+    const WORDS_PER_LOCATION = 19; // Assumption for location size if nothing else is known
     let books = [];
     let specialOrderBooks = {};
     let optionsShown = {
@@ -80,14 +81,35 @@
                 lastPublishDate = publishDate;
             }
 
-            books[i].pages = 0;
-            for (let j = 0; j < books[i].chapters.length; j++) {
-                books[i].pages += books[i].chapters[j].pages;
+            if (typeof books[i].chapters[0].pages === 'number') {
+                books[i].pages = 0;
+                for (let j = 0; j < books[i].chapters.length; j++) {
+                    books[i].pages += books[i].chapters[j].pages;
+                }
+                if (typeof books[i].words === 'undefined') {
+                    books[i].words = books[i].pages * WORDS_PER_PAGE; // Default to normal page size if word count is unknown or not applicable
+                }
+                books[i].wordsPerPage = books[i].words / books[i].pages;
+            } else if (typeof books[i].chapters[0].locations === 'number') {
+                // Books taken from Kindle use locations, so page counts are assumed
+                let locations = 0;
+                for (let j = 0; j < books[i].chapters.length; j++) {
+                    locations += books[i].chapters[j].locations;
+                }
+                if (typeof books[i].words === 'undefined') {
+                    books[i].words = locations * WORDS_PER_LOCATION;
+                }
+                books[i].wordsPerPage = WORDS_PER_PAGE;
+                const pagesPerLocation = (books[i].words / books[i].wordsPerPage) / locations;
+                let totalPages = 0;
+                for (let j = 0; j < books[i].chapters.length; j++) {
+                    books[i].chapters[j].pages = Math.round(books[i].chapters[j].locations * pagesPerLocation);
+                    if (books[i].chapters[j].pages < 1) {
+                        books[i].chapters[j].pages = 1;
+                    }
+                    totalPages += books[i].chapters[j].pages;
+                }
             }
-            if (typeof books[i].words === 'undefined') {
-                books[i].words = books[i].pages * WORDS_PER_PAGE; // Default to normal page size if word count is unknown or not applicable
-            }
-            books[i].wordsPerPage = books[i].words / books[i].pages;
             
             const $checkbox = document.createElement('input');
             $checkbox.type = 'checkbox';
