@@ -81,38 +81,45 @@
                 lastPublishDate = publishDate;
             }
 
-            if (typeof books[i].chapters[0].pages === 'number') {
-                books[i].pages = 0;
-                for (let j = 0; j < books[i].chapters.length; j++) {
-                    books[i].pages += books[i].chapters[j].pages;
-                }
-                if (typeof books[i].words === 'undefined') {
-                    books[i].words = books[i].pages * WORDS_PER_PAGE; // Default to normal page size if word count is unknown or not applicable
-                }
-                books[i].wordsPerPage = books[i].words / books[i].pages;
-            } else if (typeof books[i].chapters[0].locations === 'number') {
-                // Books taken from Kindle use locations, so page counts are assumed
-                let locations = 0;
-                for (let j = 0; j < books[i].chapters.length; j++) {
-                    locations += books[i].chapters[j].locations;
-                }
-                if (typeof books[i].words === 'undefined') {
-                    books[i].words = locations * WORDS_PER_LOCATION;
-                }
-                if (typeof books[i].pages === 'number') {
-                    // The "pages" attribute on a book is only valid when chapters don't have pages (and is optional)
-                    books[i].wordsPerPage = books[i].words / books[i].pages;
-                } else {
-                    books[i].wordsPerPage = WORDS_PER_PAGE;
-                }
-                const pagesPerLocation = (books[i].words / books[i].wordsPerPage) / locations;
-                let totalPages = 0;
-                for (let j = 0; j < books[i].chapters.length; j++) {
-                    books[i].chapters[j].pages = Math.round(books[i].chapters[j].locations * pagesPerLocation);
-                    if (books[i].chapters[j].pages < 1) {
-                        books[i].chapters[j].pages = 1;
+            if (typeof books[i].chapters !== 'undefined' && books[i].chapters.length > 0) {
+                if (typeof books[i].chapters[0].pages === 'number') {
+                    books[i].pages = 0;
+                    for (let j = 0; j < books[i].chapters.length; j++) {
+                        books[i].pages += books[i].chapters[j].pages;
                     }
-                    totalPages += books[i].chapters[j].pages;
+                    if (typeof books[i].words === 'undefined') {
+                        books[i].words = books[i].pages * WORDS_PER_PAGE; // Default to normal page size if word count is unknown or not applicable
+                    }
+                    books[i].wordsPerPage = books[i].words / books[i].pages;
+                } else if (typeof books[i].chapters[0].locations === 'number') {
+                    // Books taken from Kindle use locations, so page counts are assumed
+                    let locations = 0;
+                    for (let j = 0; j < books[i].chapters.length; j++) {
+                        locations += books[i].chapters[j].locations;
+                    }
+                    if (typeof books[i].words === 'undefined') {
+                        books[i].words = locations * WORDS_PER_LOCATION;
+                    }
+                    if (typeof books[i].pages === 'number') {
+                        // The "pages" attribute on a book is only valid when chapters don't have pages (and is optional)
+                        books[i].wordsPerPage = books[i].words / books[i].pages;
+                    } else {
+                        books[i].wordsPerPage = WORDS_PER_PAGE;
+                    }
+                    const pagesPerLocation = (books[i].words / books[i].wordsPerPage) / locations;
+                    let totalPages = 0;
+                    for (let j = 0; j < books[i].chapters.length; j++) {
+                        books[i].chapters[j].pages = Math.round(books[i].chapters[j].locations * pagesPerLocation);
+                        if (books[i].chapters[j].pages < 1) {
+                            books[i].chapters[j].pages = 1;
+                        }
+                        totalPages += books[i].chapters[j].pages;
+                    }
+                } else if (books[i].chapters.length === 1) {
+                    books[i].chapters[0].pages = Math.round(books[i].words / WORDS_PER_PAGE);
+                    if (books[i].chapters[0].pages < 1) {
+                        books[i].chapters[0].pages = 1;
+                    }
                 }
             }
             
