@@ -35,3 +35,18 @@ td {
 .book-header {
 	font-weight: bold;
 }
+@media print {
+	h1,
+	#options {
+		display: none;
+	}
+	#schedule {
+		font-size: 50%;
+		column-count: 4;
+        column-gap: 0.125in;
+        width: 6.75in;
+	}
+	.page-counts {
+		display: none;
+	}
+}

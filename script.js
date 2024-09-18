@@ -16,7 +16,7 @@
         const fileList = this.value.split(',');
         let promises = [];
         for (let i = 0; i < fileList.length; i++) {
-            promises.push(fetch('./' + fileList[i] + '.json'));
+            promises.push(fetch('./book-data/' + fileList[i] + '.json'));
         }
         Promise.all(promises)
             .then(responses => Promise.all(responses.map(r => r.json())))
@@ -491,6 +491,7 @@
             const $tr = document.createElement('tr');
             const $chapters = document.createElement('td');
             const $pages = document.createElement('td');
+            $pages.classList.add('page-counts');
 
 			for (let j = 0; j < content.length; j++) {
 				if (content[j].book != bookTitle) {
